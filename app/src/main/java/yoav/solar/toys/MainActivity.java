@@ -4,9 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
@@ -16,6 +21,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import yoav.solar.model.Toy;
 import yoav.solar.model.Toys;
 import yoav.solar.viewmodel.ToyViewModel;
@@ -24,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvToys;
     private ToyAdapter adapter;
     private ToyViewModel toyViewModel;
+    private FloatingActionButton fabAddToy;
+    private ActivityResultLauncher<Intent> toyActivityLauncher;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,9 +49,11 @@ public class MainActivity extends AppCompatActivity {
         initializeViews();
         setupViewModel();
         setRecyclerView();
+        setupFloatingButton();
     }
     private void initializeViews() {
         rvToys = findViewById(R.id.rvToys);
+        fabAddToy = findViewById(R.id.fabAddToy);
     }
     private void setupViewModel() {
         toyViewModel = new ViewModelProvider(this).get(ToyViewModel.class);
@@ -67,6 +78,25 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ToyAdapter(this, null, R.layout.toy_single_layout, listener, longListener);
         rvToys.setAdapter(adapter);
         rvToys.setLayoutManager(new LinearLayoutManager(this));
+    }
+    private void setupFloatingButton() {
+        toyActivityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>()
+                {
+                    @Override
+                    public void onActivityResult(ActivityResult o) {
+                        if (o.getResultCode() == RESULT_OK) {
+                            Intent data = o.getData();
+                        }
+                    }
+                });
+        fabAddToy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ToyActivity.class);
+                toyActivityLauncher.launch(intent);
+            }
+        });
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
